@@ -1,0 +1,363 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ link_name or "Tiếp tục" }}</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Segoe UI, Tahoma, sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: #fff;
+}
+
+.wrapper {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+}
+
+.container {
+    width: 100%;
+    max-width: 400px;
+}
+
+/* Khung chính */
+.captcha-box {
+    width: 100%;
+    min-height: 90px;
+    padding: 18px 20px;
+    background: rgba(255,255,255,.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(0,0,0,.4);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Checkbox ban đầu */
+.captcha-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    flex: 1;
+}
+
+.checkbox-container {
+    position: relative;
+    width: 32px;
+    height: 32px;
+    flex: none;
+}
+
+.checkbox-custom {
+    width: 32px;
+    height: 32px;
+    border: 2px solid rgba(255,255,255,.35);
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    background: rgba(255,255,255,.06);
+}
+
+.checkbox-custom:after {
+    content: "";
+    width: 8px;
+    height: 14px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg);
+    display: none;
+    margin-top: -3px;
+}
+
+.captcha-left input {
+    position: absolute;
+    opacity: 0;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+}
+
+.captcha-left input:checked + .checkbox-custom {
+    background: #0ea5e9;
+    border-color: #0ea5e9;
+}
+
+.captcha-left input:checked + .checkbox-custom:after {
+    display: block;
+}
+
+.captcha-text {
+    font-size: 15px;
+    color: #f1f5f9;
+    font-weight: 600;
+}
+
+.captcha-sub {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 5px;
+    line-height: 1.4;
+    display: block;
+}
+
+/* Logo */
+.captcha-right {
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.captcha-right img {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto 4px;
+}
+
+.captcha-right span {
+    font-size: 10px;
+    color: #94a3b8;
+}
+
+/* Trạng thái */
+.verify-state {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+    min-height: 62px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    order: 1;
+}
+
+.captcha-right {
+    text-align: center;
+    flex-shrink: 0;
+    order: 2;
+}
+
+.verify-state[hidden] {
+    display: none;
+}
+
+.verify-spinner {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,.2);
+    border-top-color: #38bdf8;
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.verify-check {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    color: #fff;
+    font-size: 25px;
+    line-height: 22px;
+    font-weight: 400;
+}
+
+.verify-message {
+    font-size: 16px;
+    font-weight: 600;
+    color: #f1f5f9;
+}
+
+/* Tiến trình */
+.status {
+    text-align: center;
+    color: #bae6fd;
+    font-size: 12px;
+    margin-top: 14px;
+    min-height: 18px;
+}
+
+.note {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 11px;
+    line-height: 1.5;
+    margin-top: 10px;
+}
+
+.light-bar-container {
+    height: 3px;
+    margin-top: 14px;
+    overflow: hidden;
+    background: rgba(255,255,255,.08);
+    border-radius: 4px;
+}
+
+.light-bar {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, #38bdf8, #10b981);
+}
+</style>
+</head>
+
+<body>
+
+<main class="wrapper">
+<section class="container">
+
+    <div class="captcha-box">
+
+        <!-- Giao diện ban đầu -->
+        <label class="captcha-left" id="captchaOriginal">
+
+            <span class="checkbox-container">
+
+            <input
+                type="checkbox"
+                id="continueCheck"
+                data-slug="{{ slug|e }}"
+                {% if not slug %}disabled{% endif %}
+                aria-label="Chọn để tiếp tục"
+            >
+
+                <span class="checkbox-custom"></span>
+
+            </span>
+
+            <span>
+                <span class="captcha-text">
+                    Tôi muốn tiếp tục
+                </span>
+            </span>
+
+        </label>
+
+        <!-- Logo -->
+        <div class="captcha-right" id="captchaLogo">
+            <img src="/logo.png" alt="Logo">
+            <span>Bảo mật</span>
+        </div>
+
+        <!-- Trạng thái chuyển tiếp -->
+        <div class="verify-state" id="verifyState" hidden>
+
+            <span
+                class="verify-spinner"
+                id="verifyIcon">
+            </span>
+
+            <span
+                class="verify-message"
+                id="verifyMessage">
+                Đang xác thực hệ thống...
+            </span>
+
+        </div>
+
+    </div>
+
+
+
+    <p class="status" id="status" aria-live="polite">
+        {% if not slug %}
+        Hãy truy cập bằng đường dẫn chiến dịch hợp lệ.
+        {% endif %}
+    </p>
+
+
+</section>
+</main>
+
+{% if slug %}
+<script>
+
+const SLUG = document.getElementById("continueCheck").dataset.slug;
+const WAIT_FIRST = 1800;
+const WAIT_SECOND = 1200;
+
+const check = document.getElementById("continueCheck");
+
+const original = document.getElementById("captchaOriginal");
+const logo = document.getElementById("captchaLogo");
+
+const verifyState = document.getElementById("verifyState");
+const verifyIcon = document.getElementById("verifyIcon");
+const verifyMessage = document.getElementById("verifyMessage");
+
+
+
+let started = false;
+
+check.addEventListener("change", function () {
+
+    if (!check.checked || started) {
+        return;
+    }
+
+    started = true;
+    check.disabled = true;
+
+    // Ẩn giao diện ban đầu
+    original.style.display = "none";
+
+    // Hiện trạng thái thứ nhất
+    verifyState.hidden = false;
+
+    verifyIcon.className = "verify-spinner";
+
+    verifyMessage.textContent =
+        "Đang xác thực hệ thống...";
+
+
+    // Chuyển trạng thái thứ hai
+    setTimeout(() => {
+
+        verifyIcon.className = "verify-check";
+        verifyIcon.textContent = "✓";
+
+        verifyMessage.textContent =
+            "Đã xác minh bảo mật!";
+
+        // Chuyển tới trang đích
+        setTimeout(() => {
+
+            const destination =
+                "/go/" + encodeURIComponent(SLUG)
+                + (window.location.search || "");
+
+            window.location.assign(destination);
+
+        }, WAIT_SECOND);
+
+    }, WAIT_FIRST);
+
+});
+
+</script>
+{% endif %}
+
+</body>
+</html>
